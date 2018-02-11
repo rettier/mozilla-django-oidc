@@ -152,7 +152,7 @@ class OIDCAuthenticationBackend(ModelBackend):
         if key is None:
             raise SuspiciousOperation('Could not find a valid JWKS.')
 
-        self.cache.set(self.OIDC_OP_JWKS_ENDPOINT, 3600)
+        self.cache.set(self.OIDC_OP_JWKS_ENDPOINT, key, 3600)
         return key
 
     def verify_token(self, token, **kwargs):
@@ -184,6 +184,9 @@ class OIDCAuthenticationBackend(ModelBackend):
             msg = 'JWT Nonce verification failed.'
             raise SuspiciousOperation(msg)
         return True
+
+    def update_user(self, user, claims):
+        return user
 
     def authenticate(self, **kwargs):
         """Authenticates a user based on the OIDC code flow."""
@@ -248,7 +251,7 @@ class OIDCAuthenticationBackend(ModelBackend):
             users = self.filter_users_by_claims(user_info)
 
             if len(users) == 1:
-                return users[0]
+                return self.update_user(users[0], user_info)
             elif len(users) > 1:
                 # In the rare case that two user accounts have the same email address,
                 # log and bail. Randomly selecting one seems really wrong.
