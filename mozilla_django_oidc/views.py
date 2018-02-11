@@ -1,4 +1,5 @@
 import time
+
 try:
     from urllib.parse import urlencode
 except ImportError:
@@ -7,6 +8,7 @@ except ImportError:
 
 import django
 from django.core.exceptions import SuspiciousOperation
+
 try:
     from django.urls import reverse
 except ImportError:
@@ -164,6 +166,9 @@ class OIDCLogoutView(View):
     def redirect_url(self):
         """Return the logout url defined in settings."""
         return import_from_settings('LOGOUT_REDIRECT_URL', '/')
+
+    def get(self, request):
+        return self.post(request)
 
     def post(self, request):
         """Log out the user."""
